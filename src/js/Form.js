@@ -3,9 +3,8 @@ npm start - test build
 npm run build - build production
 
 TO DO
-
-URL paramter look into React-Router
-
+Feature: fetch data as JSON (maybe);
+Bug: plex rescan isnt working. meh... 
 */
 
 import React from 'react';
@@ -13,45 +12,84 @@ import FormCheckBox from './FormCheckBox.js';
 import FormLabel from './FormLabel.js';
 import FormField from './FormField.js';
 import 'bootstrap/dist/css/bootstrap.css';
-import Fetch from 'whatwg-fetch';
 import { Button, Col, Label, Panel, Row } from 'react-bootstrap';
+
+const initialStatusTaskState = 'New';
+            
+let MobileDetect = require('mobile-detect');
+let md = new MobileDetect(window.navigator.userAgent);
 
 // Form component 
 class Form extends React.Component {
     constructor(props) {
 	    super(props);
+             
 	    this.state = {  
 	         currentStatus : 1,
-	         fieldArray : {'URL' : ['url',true,""],'Artist' : ['artist',false,""],'Album': ['album',false,""],'Name' : ['trackname',false,""],'Track #' : ['tracknum',false,""], 'Genre' : ['genre',false,""], 'Year' : ['year',false,""] },
-              isSubmitted : false, 
+	         // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
+                 fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),"Green Day"],'Album': ['album',(md.mobile() === null ? true : false),"Uno"],'Name' : ['trackname',true,"Stay the Night"],'Track #' : ['tracknum',(md.mobile() === null ? true : false),"1"], 'Genre' : ['genre',true,"Punk"], 'Year' : ['year',(md.mobile() === null ? true : false),"2010"] },
+                 isSubmitted : false, 
 	         mp3File : "",
-	         processStatus : "URL, Artist and Genre are required",
-              plexScanNewFiles : true,
+	         processStatus : (md.mobile()==null ? "All fields are required" : "URL, Artist and Genre are required"),
+                 plexScanNewFiles : true,
 	         submitButtonDisabled: false,
-	         statusTasks : { 'Downloading the song' : ['New',false], 'Writing ID3 Tags' : ['New',false],'Renaming the file' : ['New',false],'Moving the file to new location' : ['New',false], 'Done' : ['New',false] },
-              statusTasksVisible : false
+	         statusTasks : { 'Downloading the song' : [ initialStatusTaskState,false], 'Writing ID3 Tags' : [initialStatusTaskState,false],'Renaming the file' : [initialStatusTaskState,false],'Moving the file to new location' : [initialStatusTaskState,false], 'Done' : [initialStatusTaskState,false] },
+                 statusTasksVisible : false 
 	 };
-
-          // statusTasks : { 'Downloading the song' : [false,'New',false], 'Writing ID3 Tags' : [false,'New',false],'Renaming the file' : [false,'New',false],'Moving the file to new location' : [false,'New',false],'Forcing Plex Rescan' : [false,'New',false], 'Done' : [false,'New',false] }
 
          // Bind custom methods to this
 	 this.finished = this.finished.bind(this);
 	 this.formFieldChange = this.formFieldChange.bind(this);
+	 this.getParam = this.getParam.bind(this);
          this.plexScanFilesChange = this.plexScanFilesChange.bind(this);
 	 this.submitClick = this.submitClick.bind(this);
 	 this.updateStatus = this.updateStatus.bind(this);
-	 this.updateTask = this.updateTask.bind(this);
+	 this.updateStatusTask = this.updateStatusTask.bind(this);
     }
-   
+
+    // Method called when all status have finished   
+    finished() {
+         this.updateStatusTask('Done','Success');
+      
+	 this.setState({isSubmitted : true});
+    }
+
     // When the text field value changes, store the value in the array
     formFieldChange(name,value) {
-         var fld=this.state.fieldArray;
+         let fld=this.state.fieldArray;
          fld[name][2]=value;
 	    this.setState({fieldArray : fld });
     }
 
+    // Get URL parameter if provided
+    getParam(name) {
+         if (window.location.search.indexOf("URL=") !== -1) {
+              return decodeURI(window.location.search.split("URL=")[1]); 
+         } else {
+              return null;
+         }
+    }
+
+    /*getValues(valName) {
+         // Run the AJAX request
+	 fetch('./php/getDBValues.php', {method: 'GET',}).then(response => response.json()).then((response) => {
+	      if (response[0].indexOf("ERROR") !== -1) {
+	           // write error status
+		   this.updateStatus("A fatal error occurred: " + response[0]);
+              }
+
+	 }).catch(error => { 
+              console.log('request failed', error); 
+         });
+    }*/
+ 
+    // force Plex Rescan checkbox change event
+    plexScanFilesChange() {
+         this.setState({plexScanNewFiles : !this.state.plexScanNewFiles});
+    }
+
     render() {
-	 var buttonStyle = {
+	 const buttonStyle = {
 	      marginLeft: '40%',
 	      marginRight: '50%',
 	 };
@@ -59,23 +97,22 @@ class Form extends React.Component {
 	 const fields = Object.keys(this.state.fieldArray).map(key => this.renderLabelFieldRow(key));
 	 const statusTasks = Object.keys(this.state.statusTasks).map(key => this.renderStatusTasks(key));
 	 
-	 var submitButtonDisabled=false;
+	 let submitButtonDisabled=false;
 
-	 if (this.state.submitButtonDisabled && this.state.isSubmittesd===false) {
+	 // if (this.state.submitButtonDisabled && this.state.isSubmitted===false) {
+	 if (this.state.submitButtonDisabled && !this.state.isSubmitted) {
               submitButtonDisabled=true; 
 	 }
 
          // set the state of the Plex checkbox (checked/unchecked)  
          // let checked = (this.state.plexScanNewFiles===true ? "checked" : "");
 
-	 var labelStyle = {
+	 const labelStyle = {
               display: 'inline-block',
 	      width: '100%',
 	 };
          
-         var buttonText=(!this.state.isSubmitted ? "Start" : "Restart");
-         // console.log("it is " + window.location.href);
-         // var defaultURL="";
+         const buttonText=(!this.state.isSubmitted ? "Start" : "Restart");
 
 	 return (
               <Panel header="You to Me" bsStyle={"primary"}>
@@ -91,23 +128,9 @@ class Form extends React.Component {
 	 );
     }
    
-    // force Plex Rescan checkbox change event
-    plexScanFilesChange() {
-         this.setState({plexScanNewFiles : !this.state.plexScanNewFiles});
-    }
-
-    // Render the status task checkbox and labels 
-    renderStatusTasks(i) {
-	    var chkField = <FormCheckBox key={i} value={i} currentStatus={this.state.statusTasks[i][0]} checked={this.state.statusTasks[i][1]}></FormCheckBox> 
-	 
-	    return (
-	         <div className='classdiv' key={i}>{chkField}</div>
-	    );
-    }
-
     // Render the row with the Label and Field
     renderLabelFieldRow(i) {
-         var fieldRow = <FormField key={i} required={this.state.fieldArray[i][1]} onChange={e => this.formFieldChange(i,e.target.value)} ></FormField>
+         const fieldRow = <FormField key={i} required={this.state.fieldArray[i][1]} onChange={e => this.formFieldChange(i,e.target.value)} value={this.state.fieldArray[i][2]} ></FormField>
 	 
          return (
 	         <Row key={i}>
@@ -117,8 +140,57 @@ class Form extends React.Component {
 	 );
     }
 
+    // Render the status task checkbox and labels 
+    renderStatusTasks(i) {
+	    const chkField = <FormCheckBox key={i} value={i} currentStatus={this.state.statusTasks[i][0]} checked={this.state.statusTasks[i][1]}></FormCheckBox> 
+	 
+	    return (
+	         <div className='classdiv' key={i}>{chkField}</div>
+	    );
+    }
+
     // submit button click event 
     submitClick() {
+         // When the last task has been completed, the submit button changes to restart. This will reset everything when restart is clicked
+         if (this.state.isSubmitted===true) {
+              // Clear all of the field values
+              let fieldArray=this.state.fieldArray;
+
+              for (let key in fieldArray) {
+                   fieldArray[key][2]="";
+              }
+
+              this.setState({fieldArray : fieldArray});
+
+              // reset all status tasks 
+              let statusTasks=this.status.statusTasks;
+ 
+              for (let key in statusTasks) {
+                   statusTasks[key][0]='New';
+                   statusTasks[key][1]=false;
+              }
+         
+              this.setState({statusTasks : statusTasks});
+
+              // Hide status tasks
+              this.setState({statusTasksVisible : false});
+
+              // Set initial status accordingly if we are on desktop or mobile
+              if (md.mobile()==null) {
+                   this.setState({processStatusTasksVisible : "All fields are required" });
+              } else {
+                   this.setState({processStatusTasksVisible : "URL, Artist and Genre are required" });
+              }
+               
+              // Reset submitted status            
+              this.setState({isSubmitted : false});
+ 
+              // enable submit button 
+              this.setState({submitButtonDisabled : false});
+
+              return;
+         }
+
          let params= "";
 
 	 // Validate the required fields since I no longer use a form so required isn't enforced
@@ -132,20 +204,36 @@ class Form extends React.Component {
 	      return;
 	 }
 
+         if (this.state.fieldArray["Album"][1]===true && this.state.fieldArray["Album"][2]==="") {
+	      this.updateStatus("Please enter the Album");
+              return;
+         }
+
 	 if (this.state.fieldArray["Name"][2]==="") {
 	      this.updateStatus("Please enter the Name");
 	      return;
 	 }
 
+         if (this.state.fieldArray["Track #"][1]===true && this.state.fieldArray["Track #"][2]==="") {
+	      this.updateStatus("Please enter the track #");
+              return;
+         }
+
 	 if (this.state.fieldArray["Genre"][2]==="") {
 	      this.updateStatus("Please enter the Genre");
 	      return;
 	 }
+         
+         if (this.state.fieldArray["Year"][1]===true && this.state.fieldArray["Year"][2]==="") {
+	      this.updateStatus("Please enter the year");
+              return;
+         }
+
        
          // Plex Rescan is disabled for now 
          // if the user has unchecked Force Plex Rescan, remove the corresponding status task from the hash array
          /*if (this.state.plexScanNewFiles===false) {
-              var currentStatus={ ...this.state.statusTasks};
+              const currentStatus={ ...this.state.statusTasks};
               
              try {
                   delete currentStatus["Forcing Plex Rescan"];
@@ -156,13 +244,15 @@ class Form extends React.Component {
         
          // Once the user clicks on submit, disable the button to prevent further clicks
          if (this.state.submitButtonDisabled===false) {
-	      this.setState({submitButtonDisabled : true}, () => this.submitClick());
+	      // this.setState({submitButtonDisabled : true}, () => this.submitClick());
+	      this.setState({submitButtonDisabled : true});
          }
      
          // Show status tasks
          //this.setState({showStatusTasks : true});
          if (this.state.statusTasksVisible===false) {
-	      this.setState({statusTasksVisible : true}, () => this.submitClick());
+	      // this.setState({statusTasksVisible : true}, () => this.submitClick());
+	      this.setState({statusTasksVisible : true});
          }
          
          // Build AJAX parameters
@@ -174,38 +264,37 @@ class Form extends React.Component {
      	           params = '?step=1&URL=' + this.state.fieldArray["URL"][2];
          
                    // Update status task
-                   this.updateTask('Downloading the song','Info');
+                   this.updateStatusTask('Downloading the song','Info');
 
                    break;
               case 2:
                    params = "?step=2&Filename=" + this.state.mp3File + "&Artist=" + this.state.fieldArray["Artist"][2] + "&Album=" + this.state.fieldArray["Album"][2] + "&TrackName=" + this.state.fieldArray["Name"][2] + "&TrackNum=" + this.state.fieldArray["Track #"][2] + "&Genre=" + this.state.fieldArray["Genre"][2]  + "&Year=" + this.state.fieldArray["Year"][2];
-                  
-                   // Update these status tasks
-                   this.updateTask('Downloading the song','Success');
-                   this.updateTask('Writing ID3 Tags','Info');
+                   // Update status task
+                   this.updateStatusTask('Downloading the song','Success');
+                   this.updateStatusTask('Writing ID3 Tags','Info');
 
                    break;
               case 3:
 	           params = "?step=3&Filename=" + this.state.mp3File + "&Artist=" + this.state.fieldArray["Artist"][2] + "&Album=" + this.state.fieldArray["Album"][2] + "&TrackName=" + this.state.fieldArray["Name"][2] + "&TrackNum=" + this.state.fieldArray["Track #"][2] + "&Genre=" + this.state.fieldArray["Genre"][2]  + "&Year=" + this.state.fieldArray["Year"][2];
               
                    // Update these status tasks
-                   this.updateTask('Writing ID3 Tags','Success');
-                   this.updateTask('Renaming the file','Info');
+                   this.updateStatusTask('Writing ID3 Tags','Success');
+                   this.updateStatusTask('Renaming the file','Info');
                    
                    break;
               case 4:
 	           params = "?step=4&Filename=" + encodeURI(this.state.mp3File);
               
                    // Update these status tasks
-                   this.updateTask('Renaming the file','Success');
-                   this.updateTask('Moving the file to new location','Info');
+                   this.updateStatusTask('Renaming the file','Success');
+                   this.updateStatusTask('Moving the file to new location','Info');
 
                    break; 
               case 5:
 	           params = "?step=5";
               
                    // Update these status tasks
-                   this.updateTask('Moving the file to new location','Success');
+                   this.updateStatusTask('Moving the file to new location','Success');
                    // this.updateTask('Forcing Plex Rescan','Info');
  
                    break;
@@ -224,13 +313,12 @@ class Form extends React.Component {
                    case 1: 
 		        if (response[0].indexOf("ERROR") !== -1) {
                              // Update the status
-                             this.updateTask('Downloading the song','Danger');
-                        
+                             this.updateStatusTask('Downloading the song','Danger');
                               // An error occurred so we're done here
                               return;
                         }
 
-		        var mp3File = response[0];
+		        let mp3File = response[0];
 		        this.setState({mp3File : mp3File});
 
 		        this.updateStatus("The file has been downloaded. Writing the ID3 tags");
@@ -242,7 +330,7 @@ class Form extends React.Component {
                    case 2:
 		        if (response[0].indexOf("ERROR") !== -1) {
                              // Update the status
-                             this.updateTask('Writing ID3 Tags','Danger');
+                             this.updateStatusTask('Writing ID3 Tags','Danger');
                         
                              // An error occurred so we're done here
                              return;
@@ -257,7 +345,7 @@ class Form extends React.Component {
                    case 3:
 		        if (response[0].indexOf("ERROR") !== -1) {
                              // Update the status
-                             this.updateTask('Renaming the file','Danger');
+                             this.updateStatusTask('Renaming the file','Danger');
                         
                              // An error occurred so we're done here
                              return;
@@ -277,7 +365,7 @@ class Form extends React.Component {
                    case 4:
 		        if (response[0].indexOf("ERROR") !== -1) {
                              // Update the status
-                             this.updateTask('Moving the file to new location','Danger');
+                             this.updateStatusTask('Moving the file to new location','Danger');
                         
                              // An error occurred so we're done here
                              return;
@@ -291,15 +379,15 @@ class Form extends React.Component {
                         this.setState({ currentStatus : 5});
                         }*/
 
-                        this.updateTask('Moving the file to new location','Success');
+                        this.updateStatusTask('Moving the file to new location','Success');
                       
                         this.finished();
 
                         break;
-                   case 5:
+                   /*case 5:
 		        if (response[0].indexOf("ERROR") !== -1) {
                              // Update the status
-                             this.updateTask('Moving the file to new location','Danger');
+                             this.updateStatusTask('Moving the file to new location','Danger');
                         
                               // An error occurred so we're done here
                              return;
@@ -307,10 +395,10 @@ class Form extends React.Component {
 
 	      	        this.updateStatus("Done"); 
  
-                        this.updateTask('Forcing Plex Rescan','Success');
-                        this.updateTask('Done','Success');
+                        this.updateStatusTask('Forcing Plex Rescan','Success');
+                        this.updateStatusTask('Done','Success');
 
-                        break;
+                        break;*/
                    default:
                         alert("Unknown AJAX status");
               }
@@ -319,51 +407,18 @@ class Form extends React.Component {
          });
     }
 
-    getValues(valName) {
-         // Run the AJAX request
-	 fetch('./php/getDBValuess.php' + params, {method: 'GET',}).then(response => response.json()).then((response) => {
-	      if (response[0].indexOf("ERROR") !== -1) {
-	           // write error status
-		   this.updateStatus("A fatal error occurred: " + response[0]);
-              }
-
-	 }).catch(error => { 
-              console.log('request failed', error); 
-         });
-    }
- 
-    finished() {
-         console.log("In finished()");
-        
-         this.updateTask('Done','Success');
-      
-	 this.setState({isSubmitted : true});
-
-         var fieldArray={ ...this.state.fieldArray};
-
-	 Object.keys(fieldArray).map(key => function(key) {
-              console.log("setting " + key + " to null");
-	       // fieldArray[key]=value;
-         });
-
-	 this.setState({fieldArray : fieldArray});
-    }
-
     // Update the gray status message label
     updateStatus(newStatus) {
-         var currStatus=this.state.processStatus;
-	 currStatus=newStatus;
-
-	 this.setState({processStatus : currStatus});
+	 this.setState({processStatus : newStatus});
     }
     
     // Update the status task 
-    updateTask(taskName,value) {
-         var currentStatus={ ...this.state.statusTasks};
-         currentStatus[taskName][1]=value;
+    updateStatusTask(taskName,value) {
+         let currentStatus={ ...this.state.statusTasks};
+         currentStatus[taskName][0]=value;
  
          // Check the checkbox if the status is not New or Info
-         currentStatus[taskName][2]=(value !== 'New' && value !== 'Info' ? true : false);
+         currentStatus[taskName][1]=(value !== 'New' && value !== 'Info' ? true : false);
 
          this.setState({statusTasks : currentStatus });
     }

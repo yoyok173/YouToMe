@@ -6,7 +6,7 @@ import { Col, Label } from 'react-bootstrap';
 
 class FormLabel extends React.Component {
     render() {
-	    var labelStyle = {
+	    const labelStyle = {
 	         marginLeft: '25%',
 	         marginRight: '25%',
               display: 'inline-block',

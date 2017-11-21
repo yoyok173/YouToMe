@@ -1,0 +1,13 @@
+11/17/17 - removed artist from filename
+         - Added id3v1 tags for better Plex tagging since it supports both formats
+         - On desktop, all fields are now manadatorya
+         - Fixed problem where steps were being repeated unncessarily
+11/20/17 - Fixed text encoding issue while writing tags
+         - Fixed bug when writing id3v1 tags
+         - Added support to provide YouTube URL via URL parameter
+         - Added validation when using desktop to make sure all fields are entered
+         - Fixed bug that caused status tasks to not update correctly
+         - Fixed validation bug that caused not all fields to be required
+         - Added restart logic so when all of the tasks complete, the submit button changes to restart. Clicking on restart resets everything back to scratch
+         - Changed initial style of status tasks
+         - Rewrote code that resets completed form which directly mutated states to use setState   

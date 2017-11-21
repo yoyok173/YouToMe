@@ -1,6 +1,5 @@
 //Checkbox component 
 import React from 'react';
-/* import { buttons } from 'bootstrap-css'; */
 import { Label } from 'react-bootstrap';
 
 
@@ -9,13 +8,13 @@ class FormCheckBox extends React.Component {
 	    super(props);
 	 
 	    this.state = {
-	         statusTaskTypes : { 'New' : 'primary','Info' : 'info', 'Success' : 'success', 'Warning' : 'warning', 'Danger' : 'danger' },
+	         statusTaskTypes : { 'New' : 'info','Info' : 'info', 'Success' : 'success', 'Warning' : 'warning', 'Danger' : 'danger' },
 	    }
     }
    
     render() {
          // Set the button iand checkbox style based on the status
-	    let chkCurrClass=this.state.statusTaskTypes[this.props.currentStatus];
+         let chkCurrClass=this.state.statusTaskTypes[this.props.currentStatus];
          
          // let btnCurrClass='btn btn-default active';
          let btnCurrClass=chkCurrClass.toString(); //.replace('fancy-checkbox','btn btn');
@@ -28,15 +27,10 @@ class FormCheckBox extends React.Component {
          }
 
          // CSS to make button height match the label
-	    var btnStyle = {
+	    const btnStyle = {
 	         height: '34px',
 	    };
 
-	    /*var labelStyle = {
-              display: 'block',
-	         width: '225px',
-	    };
-      
       /*
       	      <FormGroup>
 		   <ButtonGroup>
