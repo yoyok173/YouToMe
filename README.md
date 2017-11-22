@@ -20,4 +20,10 @@ Prerequisites: Install these applications if they are not installed already: Nod
 4. npm run build
 5. If everything comppiled correctly, copy the contents of the build folder to the folder on your web server where you are hosting it and you referred to in step 2 (E.G. /you2me)
 
+YoutoMe also supports a URL parameter with the YouTube link. The easiest way to do this is to create a bookmark in your browsers' toolbar with the name Send to YouToMe and the following JavaScript code as the URL of the bookmark:
+
+javascript:if(window.location.toString().indexOf('https://www.youtube.com')!=-1){window.open('https://mysite.com/YouToMe/?URL='+window.location.toString()+'&Title='+document.title,'_parent','');event.preventDefault();}
+
+Don't forget to replace mysite.com/YouToMe with the full URL of your instance of YouToMe. Now visit a YouTube video and click on the bookmark. A new tab/window will open with YouToMe with the URL already filled in. YouToMe will also get the title of the YouTube video page and try to determine the artist and song name. 
+
 Please contact me if you have any questons, run into any problems or would like to suggest new features. 
