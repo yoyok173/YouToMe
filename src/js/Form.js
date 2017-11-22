@@ -1,13 +1,10 @@
 /*
-npm start - test build
-npm run build - build production
 
 TO DO
-Feature: See if you can have a way to get title of URL when a youtube URL is pasted in
-Add validation that URL is in fact a youtube URL
-add title URL parameter
+Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter 
 Feature: fetch data as JSON (maybe);
 Bug: plex rescan isnt working. meh... 
+
 */
 
 import React from 'react';
@@ -49,33 +46,6 @@ class Form extends React.Component {
 	 this.submitClick = this.submitClick.bind(this);
 	 this.updateStatus = this.updateStatus.bind(this);
 	 this.updateStatusTask = this.updateStatusTask.bind(this);
-    }
-
-    // Parses URL parameter 
-    parseTitle(section) {
-         // section can be artist name or song name
-         let titleParam=this.getParam("Title");
-         
-         if (!titleParam) {
-              return null;
-         }
-
-         // Remove these strings from the URL 
-         titleParam=titleParam.toString().replace(' - [HQ] - YouTube','');
-         titleParam=titleParam.replace(' - YouTube','');
-
-         // If no dash is in the title, I'm going to assume that the title is the song name 
-         if (titleParam.indexOf('-')===null && section==='title') {
-               return titleParam;
-         }
-
-         let res=titleParam.split('-');
-
-         if (section==='artist' && res[0]) {
-              return res[0].trim();
-         } else if (section==='title' && res[1]) {
-              return res[1].trim();
-         }
     }
 
     // Method called when all status have finished   
@@ -125,6 +95,33 @@ class Form extends React.Component {
     // force Plex Rescan checkbox change event
     plexScanFilesChange() {
          this.setState({plexScanNewFiles : !this.state.plexScanNewFiles});
+    }
+
+    // Parses URL parameter 
+    parseTitle(section) {
+         // section can be artist name or song name
+         let titleParam=this.getParam("Title");
+         
+         if (!titleParam) {
+              return null;
+         }
+
+         // Remove these strings from the URL 
+         titleParam=titleParam.toString().replace(' - [HQ] - YouTube','');
+         titleParam=titleParam.replace(' - YouTube','');
+
+         // If no dash is in the title, I'm going to assume that the title is the song name 
+         if (titleParam.indexOf('-')===null && section==='title') {
+               return titleParam;
+         }
+
+         let res=titleParam.split('-');
+
+         if (section==='artist' && res[0]) {
+              return res[0].trim();
+         } else if (section==='title' && res[1]) {
+              return res[1].trim();
+         }
     }
 
     render() {
@@ -235,6 +232,11 @@ class Form extends React.Component {
 	 // Validate the required fields since I no longer use a form so required isn't enforced
 	 if (this.state.fieldArray["URL"][2]==="") {
 	      this.updateStatus("Please enter the URL");
+	      return;
+	 }
+
+	 if (this.state.fieldArray["URL"][2].indexOf("https://www.youtube.com")===-1) {
+	      this.updateStatus("The URL does is not a YouTube URL and is not supposed");
 	      return;
 	 }
 

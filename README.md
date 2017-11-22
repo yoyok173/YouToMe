@@ -1,4 +1,4 @@
-YouToMe is an application that I created in ReactJS that will display an HTML formi that can be used to download the audio from a YouTube URL as an mp3, write the ID3 tags and move the file to a location that you specify.
+YouToMe is an application that I created in ReactJS that will display an HTML form that can be used to download the audio from a YouTube URL as an mp3, write the ID3 tags and move the file to a location that you specify.
 
 Requirements to run YouToMe:
 1. Linux based server (tested with Apache and Nginx) or Windows based server (currently untested but should work).
