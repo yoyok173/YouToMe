@@ -236,7 +236,8 @@ class Form extends React.Component {
 	 }
 
 	 if (this.state.fieldArray["URL"][2].indexOf("https://www.youtube.com")===-1) {
-	      this.updateStatus("The URL does is not a YouTube URL and is not supposed");
+	      this.updateStatus("Only YouTube URLs are supposed");
+
 	      return;
 	 }
 
