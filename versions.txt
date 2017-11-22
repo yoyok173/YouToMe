@@ -11,3 +11,6 @@
          - Added restart logic so when all of the tasks complete, the submit button changes to restart. Clicking on restart resets everything back to scratch
          - Changed initial style of status tasks
          - Rewrote code that resets completed form which directly mutated states to use setState   
+
+11/21/17 - Add support for URL parameters
+11/22/17 - Fix for bug when attempting to parse URL parameters when none were provided

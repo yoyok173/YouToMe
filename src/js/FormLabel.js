@@ -1,6 +1,5 @@
 // Label component
 import React from 'react';
-/* import { buttons } from 'bootstrap-css'; */
 import { Col, Label } from 'react-bootstrap';
 
 

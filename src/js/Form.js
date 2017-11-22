@@ -3,6 +3,9 @@ npm start - test build
 npm run build - build production
 
 TO DO
+Feature: See if you can have a way to get title of URL when a youtube URL is pasted in
+Add validation that URL is in fact a youtube URL
+add title URL parameter
 Feature: fetch data as JSON (maybe);
 Bug: plex rescan isnt working. meh... 
 */
@@ -27,7 +30,7 @@ class Form extends React.Component {
 	    this.state = {  
 	         currentStatus : 1,
 	         // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
-                 fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),"Green Day"],'Album': ['album',(md.mobile() === null ? true : false),"Uno"],'Name' : ['trackname',true,"Stay the Night"],'Track #' : ['tracknum',(md.mobile() === null ? true : false),"1"], 'Genre' : ['genre',true,"Punk"], 'Year' : ['year',(md.mobile() === null ? true : false),"2010"] },
+                 fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),this.parseTitle('artist')],'Album': ['album',(md.mobile() === null ? true : false),""],'Name' : ['trackname',true,this.parseTitle('title')],'Track #' : ['tracknum',(md.mobile() === null ? true : false),""], 'Genre' : ['genre',true,""], 'Year' : ['year',(md.mobile() === null ? true : false),""] },
                  isSubmitted : false, 
 	         mp3File : "",
 	         processStatus : (md.mobile()==null ? "All fields are required" : "URL, Artist and Genre are required"),
@@ -41,10 +44,38 @@ class Form extends React.Component {
 	 this.finished = this.finished.bind(this);
 	 this.formFieldChange = this.formFieldChange.bind(this);
 	 this.getParam = this.getParam.bind(this);
+	 this.parseTitle = this.parseTitle.bind(this);
          this.plexScanFilesChange = this.plexScanFilesChange.bind(this);
 	 this.submitClick = this.submitClick.bind(this);
 	 this.updateStatus = this.updateStatus.bind(this);
 	 this.updateStatusTask = this.updateStatusTask.bind(this);
+    }
+
+    // Parses URL parameter 
+    parseTitle(section) {
+         // section can be artist name or song name
+         let titleParam=this.getParam("Title");
+         
+         if (!titleParam) {
+              return null;
+         }
+
+         // Remove these strings from the URL 
+         titleParam=titleParam.toString().replace(' - [HQ] - YouTube','');
+         titleParam=titleParam.replace(' - YouTube','');
+
+         // If no dash is in the title, I'm going to assume that the title is the song name 
+         if (titleParam.indexOf('-')===null && section==='title') {
+               return titleParam;
+         }
+
+         let res=titleParam.split('-');
+
+         if (section==='artist' && res[0]) {
+              return res[0].trim();
+         } else if (section==='title' && res[1]) {
+              return res[1].trim();
+         }
     }
 
     // Method called when all status have finished   
@@ -63,10 +94,18 @@ class Form extends React.Component {
 
     // Get URL parameter if provided
     getParam(name) {
-         if (window.location.search.indexOf("URL=") !== -1) {
-              return decodeURI(window.location.search.split("URL=")[1]); 
-         } else {
-              return null;
+         let query = window.location.search.substr(1);
+         
+         if (query==="") {
+              return;
+         }
+
+         var res=query.split("&");
+
+         if (name==='URL' && res[0]) {
+              return decodeURI(res[0].replace('URL=','')); 
+         } else if (name==='Title' && res[1]) {
+              return decodeURI(res[1].replace('Title=','')); 
          }
     }
 
