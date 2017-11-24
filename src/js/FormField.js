@@ -1,9 +1,12 @@
 // Text field component 
 import React from 'react';
-/* import { buttons } from 'bootstrap-css'; */
 import { Col } from 'react-bootstrap';
 
+// Stateless functional component
+const FormField = props => 
+     <Col xs={6}><h2><input type="text" style={{'marginLeft':'5%','MarginRight':'25%'}} name={props.value} required={(props.required===true ? "required" : "")} onChange={props.onChange} value={props.value} /></h2></Col>
 
+/*
 class FormField extends React.Component {
     render() {
          // text field style
@@ -17,5 +20,6 @@ class FormField extends React.Component {
 	    );
     }
 }
+*/
 
 export default FormField;

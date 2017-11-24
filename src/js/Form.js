@@ -1,9 +1,12 @@
 /*
 
 TO DO
+
+Add support for both platforms in servertasks.php
+make servertasks.php save mp3 to tmp on both platforms
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter 
 Feature: fetch data as JSON (maybe);
-Bug: plex rescan isnt working. meh... 
+Feature: Create path artist\album\tracknum - title.mp3 if these fields are provided (maybe feature)
 
 */
 
@@ -22,19 +25,19 @@ let md = new MobileDetect(window.navigator.userAgent);
 // Form component 
 class Form extends React.Component {
     constructor(props) {
-	    super(props);
+         super(props);
              
-	    this.state = {  
-	         currentStatus : 1,
-	         // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
-                 fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),this.parseTitle('artist')],'Album': ['album',(md.mobile() === null ? true : false),""],'Name' : ['trackname',true,this.parseTitle('title')],'Track #' : ['tracknum',(md.mobile() === null ? true : false),""], 'Genre' : ['genre',true,""], 'Year' : ['year',(md.mobile() === null ? true : false),""] },
-                 isSubmitted : false, 
-	         mp3File : "",
-	         processStatus : (md.mobile()==null ? "All fields are required" : "URL, Artist and Genre are required"),
-                 plexScanNewFiles : true,
-	         submitButtonDisabled: false,
-	         statusTasks : { 'Downloading the song' : [ initialStatusTaskState,false], 'Writing ID3 Tags' : [initialStatusTaskState,false],'Renaming the file' : [initialStatusTaskState,false],'Moving the file to new location' : [initialStatusTaskState,false], 'Done' : [initialStatusTaskState,false] },
-                 statusTasksVisible : false 
+	 this.state = {  
+	      currentStatus : 1,
+	      // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
+              fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),this.parseTitle('artist')],'Album': ['album',(md.mobile() === null ? true : false),""],'Name' : ['trackname',true,this.parseTitle('title')],'Track #' : ['tracknum',(md.mobile() === null ? true : false),""], 'Genre' : ['genre',true,""], 'Year' : ['year',(md.mobile() === null ? true : false),""] },
+              isSubmitted : false, 
+	      mp3File : "",
+	      processStatus : (md.mobile()==null ? "All fields are required" : "URL, Artist and Genre are required"),
+              plexScanNewFiles : true,
+	      submitButtonDisabled: false,
+	      statusTasks : { 'Downloading the song' : [ initialStatusTaskState,false], 'Writing ID3 Tags' : [initialStatusTaskState,false],'Renaming the file' : [initialStatusTaskState,false],'Moving the file to new location' : [initialStatusTaskState,false], 'Done' : [initialStatusTaskState,false] },
+              statusTasksVisible : false 
 	 };
 
          // Bind custom methods to this

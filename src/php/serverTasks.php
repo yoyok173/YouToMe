@@ -5,11 +5,19 @@
      // The path where the song will be moved to. Make sure the path has a slash at the end
      $destinationPath="/mnt/usb/Music/Unsorted/";
 
+     $os=php_uname("s");
+     
      // This script is called multiple times using Ajax requests
      switch($_GET["step"]) {
           case "1": // Download the song
                // Execute the script that downloads the song and returns the mp3 file name
-               exec("youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | grep \"\[ffmpeg\] Destination:\" 2>&1",$retArr,$retVal);
+	       
+	       if ($os=='Linux') 	  
+	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | grep Destination: | grep mp3 2>&1";
+	       else
+	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | find \"Destination:\" | find \"mp3\" 2>&1";
+
+	       exec($cmd,$retArr,$retVal);
          
                // If its set to something, set it back
                /*if ($currLDLibraryPath != false) {

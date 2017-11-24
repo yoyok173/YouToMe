@@ -1,2 +1,1 @@
 create path artist\album\tracknum - title.mp3 if these fields are provided
-maybe make artist,album,track num,title,genre and year mandatory

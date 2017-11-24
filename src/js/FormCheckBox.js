@@ -2,7 +2,6 @@
 import React from 'react';
 import { Label } from 'react-bootstrap';
 
-
 class FormCheckBox extends React.Component {
     constructor(props) {
 	    super(props);
@@ -27,44 +26,19 @@ class FormCheckBox extends React.Component {
          }
 
          // CSS to make button height match the label
-	    const btnStyle = {
-	         height: '34px',
-	    };
-
-      /*
-      	      <FormGroup>
-		   <ButtonGroup>
-			<Label style={btnStyle}>
-		             <input type="checkbox" name={chkCurrClass} id={chkCurrClass} autoComplete="off" disabled="disabled" checked={checked} />
-			     <Glyphicon glyph="ok"></Glyphicon>
-			     <span> </span>
-			</Label>
-		    <Label htmlFor={chkCurrClass} bsStyle={btnCurrClass} style={labelStyle}>
-			 {this.props.value}
-		    </Label>
-		   </ButtonGroup>
-	      </FormGroup> 
-      */
-	    return (	   
-	         <h2>
+	 const btnStyle = {
+	      height: '34px',
+	 };
+      
+	 return (	   
+	      <h2>
                    <Label style={btnStyle} bsStyle={btnCurrClass}>
-		              <input type="checkbox" name={chkCurrClass} id={chkCurrClass} autoComplete="off" disabled="disabled" checked={checked} />
+		        <input type="checkbox" name={chkCurrClass} id={chkCurrClass} autoComplete="off" disabled="disabled" checked={checked} />
                         <span>  </span>
                         {this.props.value}
                    </Label>
-              </h2>
-	    ); 
-	 /*          
-	 switch (this.props.currentStatus) {
-	      case 'New':
-		   break;
-	      case 'Success':
-		   break;
-	      case 'Warning':
-		   break;
-	      case 'Danger':
-		   break;
-	 }*/
+            </h2>
+	); 
      }    
 }
 
