@@ -14,3 +14,5 @@
 
 11/21/17 - Add support for URL parameters
 11/22/17 - Fix for bug when attempting to parse URL parameters when none were provided
+11/24/17 - Fix for bug when resetting where status tasks remained visible instead of being hidden
+         - Fix for bug when resetting where the status message didn't reset back to the initial message

@@ -202,10 +202,10 @@ class Form extends React.Component {
               this.setState({fieldArray : fieldArray});
 
               // reset all status tasks 
-              let statusTasks=this.status.statusTasks;
+              let statusTasks=this.state.statusTasks;
  
               for (let key in statusTasks) {
-                   statusTasks[key][0]='New';
+                   statusTasks[key][0]=initialStatusTaskState;
                    statusTasks[key][1]=false;
               }
          
@@ -216,9 +216,9 @@ class Form extends React.Component {
 
               // Set initial status accordingly if we are on desktop or mobile
               if (md.mobile()==null) {
-                   this.setState({processStatusTasksVisible : "All fields are required" });
+                   this.setState({processStatus : "All fields are required" });
               } else {
-                   this.setState({processStatusTasksVisible : "URL, Artist and Genre are required" });
+                   this.setState({processStatus : "URL, Artist and Genre are required" });
               }
                
               // Reset submitted status            
@@ -226,6 +226,8 @@ class Form extends React.Component {
  
               // enable submit button 
               this.setState({submitButtonDisabled : false});
+
+              this.setState({currentStatus : 1 });
 
               return;
          }
