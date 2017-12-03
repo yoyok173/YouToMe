@@ -16,6 +16,7 @@ import FormLabel from './FormLabel.js';
 import FormField from './FormField.js';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Button, Col, Label, Panel, Row } from 'react-bootstrap';
+// import { setCurrentOrientation,orientationCleanup } from 'nativescript-screen-orientation';
 
 const initialStatusTaskState = 'New';
             
@@ -24,10 +25,10 @@ let md = new MobileDetect(window.navigator.userAgent);
 
 // Form component 
 class Form extends React.Component {
-    constructor(props) {
-         super(props);
+     constructor(props) {
+          super(props);
              
-	 this.state = {  
+   	  this.state = {  
 	      currentStatus : 1,
 	      // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
               fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),this.parseTitle('artist')],'Album': ['album',(md.mobile() === null ? true : false),""],'Name' : ['trackname',true,this.parseTitle('title')],'Track #' : ['tracknum',(md.mobile() === null ? true : false),""], 'Genre' : ['genre',true,""], 'Year' : ['year',(md.mobile() === null ? true : false),""] },
@@ -39,6 +40,19 @@ class Form extends React.Component {
 	      statusTasks : { 'Downloading the song' : [ initialStatusTaskState,false], 'Writing ID3 Tags' : [initialStatusTaskState,false],'Renaming the file' : [initialStatusTaskState,false],'Moving the file to new location' : [initialStatusTaskState,false], 'Done' : [initialStatusTaskState,false] },
               statusTasksVisible : false 
 	 };
+        
+         // Set landscape orientation on mobile
+         if (md.mobile()) {
+              window.screen.lockOrientationUniversal = window.screen.lockOrientation || window.screen.mozLockOrientation || window.screen.msLockOrientation;
+
+              if (window.screen.lockOrientationUniversal("landscape-primary")) {
+                   // orientation was locked
+                   alert("orientation set");
+              } else {
+                   alert("Please rotate your device into landscape orientation");
+                   // orientation lock failed
+              }
+         }
 
          // Bind custom methods to this
 	 this.finished = this.finished.bind(this);
