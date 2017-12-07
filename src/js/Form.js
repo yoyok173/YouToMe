@@ -2,23 +2,10 @@
 
 TO DO
 
-Add support for both platforms in servertasks.php
+Add support for both Windows and Linux/Unix servertasks.php
 make servertasks.php save mp3 to tmp on both platforms
-Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter 
+Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter (maybe)
 Feature: fetch data as JSON (maybe);
-
-// 12/5 commented out unneeded plex related function
-        moved getParam and parseTitle methods from Form.js into external module
-        moved unused methods iform Form.js to external module
-        moved form validation logic ifrom Form.js to external module
-        moved logic to build fetch paraneters from Form.js to external module
-        Added array of status tasks and made status tasks more dynamic
-        removed logic to make all tasks mandatory on desktop
-        slimmed down Form
-  12/7  Added logic to build directory based on artist and album name
-        When an error occurs you can now reset and start over
-        Improved automatic title parsing
-*/
 
 import React from 'react';
 import FormCheckBox from './FormCheckBox.js';
