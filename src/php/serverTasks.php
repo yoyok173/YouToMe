@@ -3,16 +3,21 @@
      require_once('getid3/write.php');
   
      // The path where the song will be moved to. Make sure the path has a slash at the end
-     $destinationPath="/mnt/usb/Music/Unsorted/";
+     $destinationPath="/mnt/usb/Music/";
 
-     $os=php_uname("s");
+     //$os=php_uname("s");
+     $os=(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? "Windows" : "Unix");
      
+     if (!isset($_GET["step"])) {
+          die("Step not provided");
+     }
+
      // This script is called multiple times using Ajax requests
      switch($_GET["step"]) {
           case "1": // Download the song
                // Execute the script that downloads the song and returns the mp3 file name
 	       
-	       if ($os=='Linux') 	  
+	       if ($os=='Unix') 	  
 	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | grep Destination: | grep mp3 2>&1";
 	       else
 	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | find \"Destination:\" | find \"mp3\" 2>&1";
@@ -119,14 +124,52 @@
                }
              
                return;
-          case 4: // Move file new location 
+          case 4: // Move file new location
+               $artist=htmlspecialchars($_GET["Artist"]);
+               $artist=str_replace("'","",$artist);
+
+               $album=htmlspecialchars($_GET["Album"]);
+               $pathBuildSucceeded=false;
+
+               // Try to build path if it exists 
+	       if ($artist != null && $artist != "" && $album != null && $album != "") {
+                    if (file_exists($destinationPath . $artist)==false) {
+                         if (mkdir($destinationPath . $artist)) {
+                              if (!file_exists($destinationPath . $artist . ($os=="Windows" ? "\\" : "/") . $album)) {
+                                   if (mkdir($destinationPath . $artist . ($os=="Windows" ? "\\" : "/") . $album)) {
+                                        // If we were able to create the path with artist and album when it didn't exist before
+                                        $pathBuildSucceeded=true;
+                                   }
+                              } else {
+                                   // If the path artist\album already exists
+                                   $pathBuildSucceeded=true;
+                              }
+                         }
+		    } else {
+		         // Artist already exists so try to create album
+                         if (!file_exists($destinationPath . $artist . ($os=="Windows" ? "\\" : "/") . $album)) {
+                              if (mkdir($destinationPath . $artist . ($os=="Windows" ? "\\" : "/") . $album)) {
+                                   // If we were able to create the path with artist and album when it didn't exist before
+                                   $pathBuildSucceeded=true;
+                              }
+                         } else {
+                              // If the path artist\album already exists
+                              $pathBuildSucceeded=true;
+                         }
+		    }
+               }
+    
+               if ($pathBuildSucceeded) {
+                    $destinationPath=$destinationPath . $artist . ($os=="Windows" ? "\\" : "/") . $album . ($os=="Windows" ? "\\" : "/");
+               }
+
                $res=rename(htmlspecialchars($_GET["Filename"]),$destinationPath . htmlspecialchars($_GET["Filename"]));
                
                if ($res==true) {
                     echo json_encode(array("The file has been moved to the new location"));
                } else {
                     echo json_encode(array("ERROR: An error occurred while copying the file to the new location"));
-               }
+	       }
 
                return;
           case 5: // Tell Plex to scan for new files                    

@@ -6,8 +6,18 @@ Add support for both platforms in servertasks.php
 make servertasks.php save mp3 to tmp on both platforms
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter 
 Feature: fetch data as JSON (maybe);
-Feature: Create path artist\album\tracknum - title.mp3 if these fields are provided (maybe feature)
 
+// 12/5 commented out unneeded plex related function
+        moved getParam and parseTitle methods from Form.js into external module
+        moved unused methods iform Form.js to external module
+        moved form validation logic ifrom Form.js to external module
+        moved logic to build fetch paraneters from Form.js to external module
+        Added array of status tasks and made status tasks more dynamic
+        removed logic to make all tasks mandatory on desktop
+        slimmed down Form
+  12/7  Added logic to build directory based on artist and album name
+        When an error occurs you can now reset and start over
+        Improved automatic title parsing
 */
 
 import React from 'react';
@@ -16,38 +26,49 @@ import FormLabel from './FormLabel.js';
 import FormField from './FormField.js';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Button, Col, Label, Panel, Row } from 'react-bootstrap';
-// import { setCurrentOrientation,orientationCleanup } from 'nativescript-screen-orientation';
+import { buildParameters, getParam, parseTitle, validateFields } from './Y2M.module';
 
 const initialStatusTaskState = 'New';
             
-let MobileDetect = require('mobile-detect');
-let md = new MobileDetect(window.navigator.userAgent);
+const MobileDetect = require('mobile-detect');
+const md = new MobileDetect(window.navigator.userAgent);
+const isMobile=md.mobile();
+
+const statusTaskNames = [
+               '',
+               'Downloading the song',
+               'Writing ID3 Tags',
+               'Renaming the file',
+               'Moving the file to new location',
+               'Done'
+          ];
 
 // Form component 
 class Form extends React.Component {
      constructor(props) {
           super(props);
-             
+          
    	  this.state = {  
 	      currentStatus : 1,
 	      // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
-              fieldArray : {'URL' : ['url',true,(this.getParam("URL") !== "null" ? this.getParam("URL") : "")],'Artist' : ['artist',(md.mobile() === null ? true : false),this.parseTitle('artist')],'Album': ['album',(md.mobile() === null ? true : false),""],'Name' : ['trackname',true,this.parseTitle('title')],'Track #' : ['tracknum',(md.mobile() === null ? true : false),""], 'Genre' : ['genre',true,""], 'Year' : ['year',(md.mobile() === null ? true : false),""] },
+              fieldArray : {'URL' : ['url',true,(getParam("URL") !== "" && typeof getParam("URL") !== 'undefined' ? getParam("URL") : "")],'Artist' : ['artist',true,parseTitle('artist')],'Album': ['album',false,""],'Name' : ['trackname',true,parseTitle('title')],'Track #' : ['tracknum',false,""], 'Genre' : ['genre',true,""], 'Year' : ['year',false,""] },
               isSubmitted : false, 
 	      mp3File : "",
-	      processStatus : (md.mobile()==null ? "All fields are required" : "URL, Artist and Genre are required"),
+	      processStatus : "URL, Artist,Name and Genre are required",
               plexScanNewFiles : true,
 	      submitButtonDisabled: false,
-	      statusTasks : { 'Downloading the song' : [ initialStatusTaskState,false], 'Writing ID3 Tags' : [initialStatusTaskState,false],'Renaming the file' : [initialStatusTaskState,false],'Moving the file to new location' : [initialStatusTaskState,false], 'Done' : [initialStatusTaskState,false] },
+	      statusTasks : { [statusTaskNames[1]] : [ initialStatusTaskState,false],[statusTaskNames[2]]  : [initialStatusTaskState,false], [statusTaskNames[3]] : [initialStatusTaskState,false],[statusTaskNames[4]] : [initialStatusTaskState,false], [statusTaskNames[5]] : [initialStatusTaskState,false] },
+
               statusTasksVisible : false 
 	 };
-        
+
          // Set landscape orientation on mobile
-         if (md.mobile()) {
+         if (isMobile) {
               window.screen.lockOrientationUniversal = window.screen.lockOrientation || window.screen.mozLockOrientation || window.screen.msLockOrientation;
 
               if (window.screen.lockOrientationUniversal("landscape-primary")) {
                    // orientation was locked
-                   alert("orientation set");
+                   //alert("orientation set");
               } else {
                    alert("Please rotate your device into landscape orientation");
                    // orientation lock failed
@@ -57,9 +78,6 @@ class Form extends React.Component {
          // Bind custom methods to this
 	 this.finished = this.finished.bind(this);
 	 this.formFieldChange = this.formFieldChange.bind(this);
-	 this.getParam = this.getParam.bind(this);
-	 this.parseTitle = this.parseTitle.bind(this);
-         this.plexScanFilesChange = this.plexScanFilesChange.bind(this);
 	 this.submitClick = this.submitClick.bind(this);
 	 this.updateStatus = this.updateStatus.bind(this);
 	 this.updateStatusTask = this.updateStatusTask.bind(this);
@@ -77,68 +95,6 @@ class Form extends React.Component {
          let fld=this.state.fieldArray;
          fld[name][2]=value;
 	    this.setState({fieldArray : fld });
-    }
-
-    // Get URL parameter if provided
-    getParam(name) {
-         let query = window.location.search.substr(1);
-         
-         if (query==="") {
-              return;
-         }
-
-         var res=query.split("&");
-
-         if (name==='URL' && res[0]) {
-              return decodeURI(res[0].replace('URL=','')); 
-         } else if (name==='Title' && res[1]) {
-              return decodeURI(res[1].replace('Title=','')); 
-         }
-    }
-
-    /*getValues(valName) {
-         // Run the AJAX request
-	 fetch('./php/getDBValues.php', {method: 'GET',}).then(response => response.json()).then((response) => {
-	      if (response[0].indexOf("ERROR") !== -1) {
-	           // write error status
-		   this.updateStatus("A fatal error occurred: " + response[0]);
-              }
-
-	 }).catch(error => { 
-              console.log('request failed', error); 
-         });
-    }*/
- 
-    // force Plex Rescan checkbox change event
-    plexScanFilesChange() {
-         this.setState({plexScanNewFiles : !this.state.plexScanNewFiles});
-    }
-
-    // Parses URL parameter 
-    parseTitle(section) {
-         // section can be artist name or song name
-         let titleParam=this.getParam("Title");
-         
-         if (!titleParam) {
-              return null;
-         }
-
-         // Remove these strings from the URL 
-         titleParam=titleParam.toString().replace(' - [HQ] - YouTube','');
-         titleParam=titleParam.replace(' - YouTube','');
-
-         // If no dash is in the title, I'm going to assume that the title is the song name 
-         if (titleParam.indexOf('-')===null && section==='title') {
-               return titleParam;
-         }
-
-         let res=titleParam.split('-');
-
-         if (section==='artist' && res[0]) {
-              return res[0].trim();
-         } else if (section==='title' && res[1]) {
-              return res[1].trim();
-         }
     }
 
     render() {
@@ -246,139 +202,58 @@ class Form extends React.Component {
               return;
          }
 
-         let params= "";
-
-	 // Validate the required fields since I no longer use a form so required isn't enforced
-	 if (this.state.fieldArray["URL"][2]==="") {
-	      this.updateStatus("Please enter the URL");
-	      return;
-	 }
-
-	 if (this.state.fieldArray["URL"][2].indexOf("https://www.youtube.com")===-1) {
-	      this.updateStatus("Only YouTube URLs are supposed");
-
-	      return;
-	 }
-
-	 if (this.state.fieldArray["Artist"][2]==="") {
-	      this.updateStatus("Please enter the Artist");
-	      return;
-	 }
-
-         if (this.state.fieldArray["Album"][1]===true && this.state.fieldArray["Album"][2]==="") {
-	      this.updateStatus("Please enter the Album");
-              return;
-         }
-
-	 if (this.state.fieldArray["Name"][2]==="") {
-	      this.updateStatus("Please enter the Name");
-	      return;
-	 }
-
-         if (this.state.fieldArray["Track #"][1]===true && this.state.fieldArray["Track #"][2]==="") {
-	      this.updateStatus("Please enter the track #");
-              return;
-         }
-
-	 if (this.state.fieldArray["Genre"][2]==="") {
-	      this.updateStatus("Please enter the Genre");
-	      return;
-	 }
+	 // Validate the required fields
+         let result=validateFields(this.state.fieldArray);
          
-         if (this.state.fieldArray["Year"][1]===true && this.state.fieldArray["Year"][2]==="") {
-	      this.updateStatus("Please enter the year");
+         if (result[0]==="Error") {
+              this.updateStatus(result[1]);
               return;
          }
 
-       
-         // Plex Rescan is disabled for now 
-         // if the user has unchecked Force Plex Rescan, remove the corresponding status task from the hash array
-         /*if (this.state.plexScanNewFiles===false) {
-              const currentStatus={ ...this.state.statusTasks};
-              
-             try {
-                  delete currentStatus["Forcing Plex Rescan"];
-
-                  this.setState({statusTasks : currentStatus });
-              } catch (e) {}
-         }*/
-        
          // Once the user clicks on submit, disable the button to prevent further clicks
          if (this.state.submitButtonDisabled===false) {
-	      // this.setState({submitButtonDisabled : true}, () => this.submitClick());
 	      this.setState({submitButtonDisabled : true});
          }
      
          // Show status tasks
          //this.setState({showStatusTasks : true});
          if (this.state.statusTasksVisible===false) {
-	      // this.setState({statusTasksVisible : true}, () => this.submitClick());
 	      this.setState({statusTasksVisible : true});
          }
-         
-         // Build AJAX parameters
-         switch (this.state.currentStatus) {
-              case 1: 
-	           this.updateStatus("Starting the download");
+       
+         // Build fetch parameters 
+         const params=buildParameters(this.state.currentStatus,this.state.fieldArray,this.state.mp3File);
 
-                   // step 1 params
-     	           params = '?step=1&URL=' + this.state.fieldArray["URL"][2];
-         
-                   // Update status task
-                   this.updateStatusTask('Downloading the song','Info');
-
-                   break;
-              case 2:
-                   params = "?step=2&Filename=" + this.state.mp3File + "&Artist=" + this.state.fieldArray["Artist"][2] + "&Album=" + this.state.fieldArray["Album"][2] + "&TrackName=" + this.state.fieldArray["Name"][2] + "&TrackNum=" + this.state.fieldArray["Track #"][2] + "&Genre=" + this.state.fieldArray["Genre"][2]  + "&Year=" + this.state.fieldArray["Year"][2];
-                   // Update status task
-                   this.updateStatusTask('Downloading the song','Success');
-                   this.updateStatusTask('Writing ID3 Tags','Info');
-
-                   break;
-              case 3:
-	           params = "?step=3&Filename=" + this.state.mp3File + "&Artist=" + this.state.fieldArray["Artist"][2] + "&Album=" + this.state.fieldArray["Album"][2] + "&TrackName=" + this.state.fieldArray["Name"][2] + "&TrackNum=" + this.state.fieldArray["Track #"][2] + "&Genre=" + this.state.fieldArray["Genre"][2]  + "&Year=" + this.state.fieldArray["Year"][2];
-              
-                   // Update these status tasks
-                   this.updateStatusTask('Writing ID3 Tags','Success');
-                   this.updateStatusTask('Renaming the file','Info');
-                   
-                   break;
-              case 4:
-	           params = "?step=4&Filename=" + encodeURI(this.state.mp3File);
-              
-                   // Update these status tasks
-                   this.updateStatusTask('Renaming the file','Success');
-                   this.updateStatusTask('Moving the file to new location','Info');
-
-                   break; 
-              case 5:
-	           params = "?step=5";
-              
-                   // Update these status tasks
-                   this.updateStatusTask('Moving the file to new location','Success');
-                   // this.updateTask('Forcing Plex Rescan','Info');
- 
-                   break;
-              default:
-                   alert("Unknown step in submitClick()");
-         } 
-
+         // Set initial status
+         if (this.state.currentStatus===1) {
+	      this.updateStatus("Starting the download");
+         }
+        
+         // Update status task based on current status
+         if (this.state.currentStatus===1) {
+              this.updateStatusTask(statusTaskNames[1],'Info');
+         } else {
+              this.updateStatusTask(statusTaskNames[this.state.currentStatus-1],'Success');
+              this.updateStatusTask(statusTaskNames[this.state.currentStatus],'Info');
+         }
+                 
          // Run the AJAX request
 	 fetch('./php/serverTasks.php' + params, {method: 'GET',}).then(response => response.json()).then((response) => {
 	      if (response[0].indexOf("ERROR") !== -1) {
 	           // write error status
 		   this.updateStatus("A fatal error occurred: " + response[0]);
+                   
+                    // Update the status task
+                    this.updateStatusTask(statusTaskNames[this.state.currentStatus],'Danger');
+
+                    // Reset submitted status            
+                    this.setState({isSubmitted : false});
+
+                    return;
               }
 
               switch (this.state.currentStatus) {
                    case 1: 
-		        if (response[0].indexOf("ERROR") !== -1) {
-                             // Update the status
-                             this.updateStatusTask('Downloading the song','Danger');
-                              // An error occurred so we're done here
-                              return;
-                        }
-
 		        let mp3File = response[0];
 		        this.setState({mp3File : mp3File});
 
@@ -389,14 +264,6 @@ class Form extends React.Component {
 
                          break;
                    case 2:
-		        if (response[0].indexOf("ERROR") !== -1) {
-                             // Update the status
-                             this.updateStatusTask('Writing ID3 Tags','Danger');
-                        
-                             // An error occurred so we're done here
-                             return;
-                        }
-
 		        this.updateStatus("The ID3 tags have been written. Renaming the file");
 			
                         // Update the status and continue on to the next step 
@@ -404,14 +271,6 @@ class Form extends React.Component {
 
                         break;
                    case 3:
-		        if (response[0].indexOf("ERROR") !== -1) {
-                             // Update the status
-                             this.updateStatusTask('Renaming the file','Danger');
-                        
-                             // An error occurred so we're done here
-                             return;
-                        }
-                     
                         // save the new file name
 		        mp3File = response;
 
@@ -424,42 +283,13 @@ class Form extends React.Component {
 
                         break;
                    case 4:
-		        if (response[0].indexOf("ERROR") !== -1) {
-                             // Update the status
-                             this.updateStatusTask('Moving the file to new location','Danger');
-                        
-                             // An error occurred so we're done here
-                             return;
-                        }
-
 		        this.updateStatus("The file has been moved to the new location");
 		
-                        /*if (Object.keys(this.state.statusTasks).length>=5) {	
-                        // Update the status and continue on to the next step 
-                        // this.setState({ currentStatus : 5}, () => this.submitClick());
-                        this.setState({ currentStatus : 5});
-                        }*/
-
                         this.updateStatusTask('Moving the file to new location','Success');
                       
                         this.finished();
 
                         break;
-                   /*case 5:
-		        if (response[0].indexOf("ERROR") !== -1) {
-                             // Update the status
-                             this.updateStatusTask('Moving the file to new location','Danger');
-                        
-                              // An error occurred so we're done here
-                             return;
-                        }
-
-	      	        this.updateStatus("Done"); 
- 
-                        this.updateStatusTask('Forcing Plex Rescan','Success');
-                        this.updateStatusTask('Done','Success');
-
-                        break;*/
                    default:
                         alert("Unknown AJAX status");
               }

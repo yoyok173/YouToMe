@@ -2,7 +2,7 @@ YouToMe is an application that I created in ReactJS that will display an HTML fo
 
 Requirements to run YouToMe:
 1. Linux based server (tested with Apache and Nginx) or Windows based server (currently untested but should work).
-2. Open source utility youtube-dl (https://rg3.github.io/youtube-dl/) which does NOT need root permissions. If you are using Linux, it should be available in your repo so you can do apt-get install youtube-dl. A Windows binary is also available. If you ever get an error in the first step when the song is downloading, make sure to update youtube-dl since it may stop working until you update it to the latest version.
+2. Open source utility youtube-dl (https://rg3.github.io/youtube-dl/) which does NOT need root permissions. If you are using Linux, it should be available in your repo so you can do apt-get install youtube-dl. A Windows binary is also available. If you ever get an error in the first step when the song is downloading, make sure to update youtube-dl since it may stop working until you update it to the latest version and also make sure the php folder is writable by the user that your web server runs as with 777 permissions.
 3. Access to a location where you want the audio file to be copied to.
 
 When you submit the page, youtube-dl (which does NOT need root permissions) will create an MP3 based on the audio embedded inside of the video. 
