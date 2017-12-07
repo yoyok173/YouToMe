@@ -6,6 +6,7 @@ Add support for both Windows and Linux/Unix servertasks.php
 make servertasks.php save mp3 to tmp on both platforms
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter (maybe)
 Feature: fetch data as JSON (maybe);
+*/
 
 import React from 'react';
 import FormCheckBox from './FormCheckBox.js';
@@ -117,8 +118,7 @@ class Form extends React.Component {
 	                   <Col xs={3}></Col>
 			   <Col xs={6}><Button onClick={this.submitClick} style={buttonStyle} bsStyle="primary" disabled={submitButtonDisabled}>{buttonText}</Button></Col>
 		      </Row>
-                      {/* <h3><input type="checkbox" name='plexScanNewFiles' id='plexScanNewFiles' autocomplete="off" checked={checked} onChange={this.plexScanFilesChange} />Force Plex Rescan</h3>*/}
-		      <h2><Label bsStyle={"warning"} style={labelStyle}>{this.state.processStatus}</Label></h2><br />
+		      <h2><Label bsStyle={"warning"} style={labelStyle}>{this.state.processStatus}</Label></h2>
 	              {this.state.statusTasksVisible ? statusTasks : ""}
               </Panel>
 	 );
@@ -233,8 +233,8 @@ class Form extends React.Component {
                     // Update the status task
                     this.updateStatusTask(statusTaskNames[this.state.currentStatus],'Danger');
 
-                    // Reset submitted status            
-                    this.setState({isSubmitted : false});
+                    // Set submitted status            
+                    this.setState({isSubmitted : true});
 
                     return;
               }

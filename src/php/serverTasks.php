@@ -47,6 +47,10 @@
                     $mp3File=substr($mp3File,$pos+strlen("[ffmpeg] Destination: "));             
                }
                
+	       if (!chmod($mp3File,0777)) {
+		       echo "Failed to set file mode";
+	       }
+
                echo json_encode(array($mp3File));
                return;
           case 2: // Write the ID3 Tags
@@ -55,9 +59,9 @@
                     'band'     => array(htmlspecialchars($_GET["Artist"])), // album artist
                     'album'    => array(htmlspecialchars($_GET["Album"])),
                     'title'    => array(htmlspecialchars($_GET["TrackName"])),
-                    'tracknum' => array(htmlspecialchars($_GET["TrackNum"])),
+                    'track'    => array(htmlspecialchars($_GET["TrackNum"])),
                     'genre'    => array(htmlspecialchars($_GET["Genre"])),
-                    'year'    => array(htmlspecialchars($_GET["Year"]))
+                    'year'     => array(htmlspecialchars($_GET["Year"]))
                );
    
                // id3 object 
@@ -72,7 +76,8 @@
                // while ($version != null) {
                     // Tag writer options
                     $tagWriter->filename = htmlspecialchars($_GET["Filename"]);
-                    $tagWriter->tagformats = array('id3v1','id3v2.3');
+                    $tagWriter->tagformats = array('id3v1');
+                    // $tagWriter->tagformats = array('id3v1','id3v2.3');
                     // $tagWriter->tagformats = array('id3v2.3');
                     $tagWriter->overwrite_tags    = true; 
                     $tagWriter->remove_other_tags = false; 
