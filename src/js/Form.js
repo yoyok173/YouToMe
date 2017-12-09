@@ -7,11 +7,6 @@ make servertasks.php save mp3 to tmp on both platforms
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter (maybe)
 Feature: fetch data as JSON (maybe);
 
-12/8/17
-       - Removed alert on mobile to rotate device to landscape because it was too annoying
-       - Fixed layout rendering on mobile
-       - moved code that handles fetch response to separate method for easier readability
-       - moved code that resets the form to separate method for easier readability
 */
 
 import React from 'react';
