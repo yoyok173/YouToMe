@@ -11,24 +11,24 @@ const md = new MobileDetect(window.navigator.userAgent);
 const isMobile=md.mobile();
 
 class FormField extends React.Component {
-    render() {
-         // text field style
-	 const fieldStyle = {
-	      marginLeft: '0%',
-	      marginRight: '5%',
-	      width: '415px',
-	 };
+     render() {
+          // text field style
+	  const fieldStyle = {
+	       marginLeft: '0%',
+	       marginRight: '5%',
+	       width: '415px',
+	  };
 
-	 const mobileFieldStyle = {
-	      marginLeft: '20%',
-	      marginRight: '5%',
-	      width: '250px',
-	 };
+	  const mobileFieldStyle = {
+	       marginLeft: '20%',
+	       marginRight: '5%',
+	       width: '250px',
+	  };
       
-     return (
-	      <Col xs={4} md={10} lg={9}><h2><input type="text" style={(isMobile ? mobileFieldStyle : fieldStyle)} name={this.props.value} required={(this.props.required===true ? "required" : "")} onChange={this.props.onChange} value={this.props.value} /></h2></Col>
-	 );
-    }
+          return (
+	       <Col xs={4} md={10} lg={9}><h2><input type="text" style={(isMobile ? mobileFieldStyle : fieldStyle)} name={this.props.value} required={(this.props.required===true ? "required" : "")} onChange={this.props.onChange} value={this.props.value} /></h2></Col>
+	  );
+     }
 }
 
 export default FormField;

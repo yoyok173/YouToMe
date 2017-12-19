@@ -48,7 +48,7 @@
                }
                
 	       if (!chmod($mp3File,0777)) {
-		       echo "Failed to set file mode";
+		    echo "Failed to set file mode";
 	       }
 
                echo json_encode(array($mp3File));
@@ -70,40 +70,29 @@
 
                $tagWriter = new getid3_writetags;
                
-               // Sometimes Plex has issues with v2.3 tags and supports both v1 and v2.3 tags so I write both versions of id3 tags
-               //$version=1;
-
-               // while ($version != null) {
-                    // Tag writer options
-                    $tagWriter->filename = htmlspecialchars($_GET["Filename"]);
-                    $tagWriter->tagformats = array('id3v1');
-                    // $tagWriter->tagformats = array('id3v1','id3v2.3');
-                    // $tagWriter->tagformats = array('id3v2.3');
-                    $tagWriter->overwrite_tags    = true; 
-                    $tagWriter->remove_other_tags = false; 
-                    $tagWriter->tag_encoding      = 'UTF-8';
-                    $tagWriter->tag_data = $tagData;
+               // Tag writer options
+               $tagWriter->filename = htmlspecialchars($_GET["Filename"]);
+               $tagWriter->tagformats = array('id3v1');
+               // $tagWriter->tagformats = array('id3v1','id3v2.3');
+               // $tagWriter->tagformats = array('id3v2.3');
+               $tagWriter->overwrite_tags    = true; 
+               $tagWriter->remove_other_tags = false; 
+               $tagWriter->tag_encoding      = 'UTF-8';
+               $tagWriter->tag_data = $tagData;
               
-                    $status="";
+               $status="";
 
-                    // write tags
-                    if ($tagWriter->WriteTags()) {
-     	                 $status="Successfully wrote the ID3 tags";
+               // write tags
+               if ($tagWriter->WriteTags()) {
+     	            $status="Successfully wrote the ID3 tags";
 	      
-                         if (!empty($tagWriter->warnings)) {
-	                      $status .= "There were some warnings: " . implode('<br><br>', $tagWriter->warnings);
-    	                 }
-                    } else {
-                         $status="ERROR: Failed to write tags! " . implode('<br><br>', $tagWriter->errors);
-                    }
+                    if (!empty($tagWriter->warnings)) {
+	                 $status .= "There were some warnings: " . implode('<br><br>', $tagWriter->warnings);
+    	            }
+               } else {
+                    $status="ERROR: Failed to write tags! " . implode('<br><br>', $tagWriter->errors);
+               }
               
-                    // up the version
-                    //if ($version==1)
-                    //     $version=2;
-                    //else if ($version==2)
-                    //     $version=null;
-               //}
- 
                echo json_encode(array($status));
                return;
           case 3: // Rename the file
@@ -177,7 +166,7 @@
 	       }
 
                return;
-          case 5: // Tell Plex to scan for new files                    
+          /*case 5: // Tell Plex to scan for new files                    
                // exec(   "\"/usr/lib/plexmediaserver/Plex Media Scanner\" -s 2>&1",$retArr,$retVal);
 
                // Tell Plex to rescan the library 
@@ -191,11 +180,10 @@
                foreach ($retArr as $key => $value) {
                     echo "val is *" . $value . "*";
                }
-echo "retval is " . $retVal . " ";
+
                // echo json_encode(array("Done!"));
                // echo json_encode(array($retval,$retArr));
                 
-               return;
+               return;*/
      }
 ?>
-#!/bin/bash

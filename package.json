@@ -9,6 +9,7 @@
     "dns": "^0.2.2",
     "fetch": "^1.1.0",
     "mobile-detect": "^1.3.7",
+    "muicss": "^0.9.35",
     "nativescript-screen-orientation": "^2.0.0",
     "react": "^16.0.0",
     "react-css-modules": "^4.7.1",
@@ -28,7 +29,8 @@
   },
   "homepage": "https://segi.mooo.com/Y2M/",
   "devDependencies": {
-    "react-bootstrap": "^0.31.5",
-    "mobile-detect": "^1.3.7"
+    "jest": "^21.2.1",
+    "mobile-detect": "^1.3.7",
+    "react-bootstrap": "^0.31.5"
   }
 }

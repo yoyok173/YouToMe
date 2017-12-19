@@ -17,3 +17,4 @@
 11/24/17 - Fix for bug when resetting where status tasks remained visible instead of being hidden
          - Fix for bug when resetting where the status message didn't reset back to the initial message
 12/4/17  - Added notification on mobile to rotate device into landscape orientation for optimal experience
+12/18/17 - Fixed formatting and removed dead code
