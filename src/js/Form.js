@@ -41,7 +41,7 @@ class Form extends React.Component {
 	       currentStatus : 1,
 	       
                // fieldArray format: KEY : { 'field name',required (true or false),'value or default value if initialized in state'  }
-               fieldArray : {'URL' : ['url',true,(getParam("URL") !== "" && typeof getParam("URL") !== 'undefined' ? getParam("URL") : "")],'Artist' : ['artist',true,parseTitle('artist')],'Album': ['album',false,""],'Name' : ['trackname',true,parseTitle('title')],'Track #' : ['tracknum',false,""], 'Genre' : ['genre',true,""], 'Year' : ['year',false,""] },
+               fieldArray : {'URL' : ['url',true,(getParam("URL") !== "" && typeof getParam("URL") !== 'undefined' ? getParam("URL") : "https://www.youtube.com/watch?v=Wch3gJG2GJ4")],'Artist' : ['artist',true,parseTitle('artist')],'Album': ['album',false,""],'Name' : ['trackname',true,parseTitle('title')],'Track #' : ['tracknum',false,""], 'Genre' : ['genre',true,""], 'Year' : ['year',false,""] },
                isSubmitted : false, 
 	       mp3File : "",
 	       processStatus : "Fields marked in red are required",

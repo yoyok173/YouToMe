@@ -22,6 +22,5 @@ yarn-error.log*
 node_modules/
 build/
 scripts/
-./package.json
 src/js/*.swp
 src/php/*.swp
