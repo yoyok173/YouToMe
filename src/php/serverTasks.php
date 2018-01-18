@@ -11,26 +11,28 @@
      if (!isset($_GET["step"])) {
           die("Step not provided");
      }
+     
+     // Work in the temp directory so we don't run into permission issues saving the file
+     chdir(sys_get_temp_dir());
 
      // This script is called multiple times using Ajax requests
      switch($_GET["step"]) {
           case "1": // Download the song
                // Execute the script that downloads the song and returns the mp3 file name
-	       
 	       if ($os=='Unix') 	  
 	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | grep Destination: | grep mp3 2>&1";
 	       else
 	            $cmd="youtube-dl " .  htmlspecialchars($_GET["URL"]) . " -x --audio-format mp3 --audio-quality 320 | find \"Destination:\" | find \"mp3\" 2>&1";
 
 	       exec($cmd,$retArr,$retVal);
-         
+        
                // If its set to something, set it back
                /*if ($currLDLibraryPath != false) {
                     putenv("LD_LIBRARY_PATH",$currLDLibraryPath);
                }*/
 
                // Parse the output for the file name 
-               foreach ($retArr as $key => $value) {
+	       foreach ($retArr as $key => $value) {
                     if (strpos($value,"ffmpeg") != false) {
                          $mp3File=$value;
                     } 

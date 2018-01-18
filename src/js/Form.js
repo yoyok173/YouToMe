@@ -2,11 +2,8 @@
 
 TO DO
 
-Add support for both Windows and Linux/Unix servertasks.php
-make servertasks.php save mp3 to tmp on both platforms
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter (maybe)
 Feature: fetch data as JSON (maybe)
-
 */
 
 import React from 'react';
