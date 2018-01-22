@@ -1,7 +1,5 @@
 /*
-
 TO DO
-
 Feature: look into audio fingerprinting using Acoustid https://acoustid.org/fingerprinter (maybe)
 Feature: fetch data as JSON (maybe)
 */

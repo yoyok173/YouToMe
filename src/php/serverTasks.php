@@ -74,8 +74,8 @@
                
                // Tag writer options
                $tagWriter->filename = htmlspecialchars($_GET["Filename"]);
-               $tagWriter->tagformats = array('id3v1');
-               // $tagWriter->tagformats = array('id3v1','id3v2.3');
+               //$tagWriter->tagformats = array('id3v1');
+               $tagWriter->tagformats = array('id3v1','id3v2.3');
                // $tagWriter->tagformats = array('id3v2.3');
                $tagWriter->overwrite_tags    = true; 
                $tagWriter->remove_other_tags = false; 
